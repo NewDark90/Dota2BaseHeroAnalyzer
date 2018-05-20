@@ -6,5 +6,9 @@ namespace BaseHeroAnalyzer.Core.Parsers
 {
     public class NpcHeroParser
     {
+        public NpcHeroParser()
+        {
+
+        }
     }
 }

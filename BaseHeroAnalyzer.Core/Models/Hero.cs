@@ -6,10 +6,15 @@ namespace BaseHeroAnalyzer.Core.Models
 {
     public class Hero
     {
-        public decimal BaseStrength { get; set; }
-        public decimal BaseAgility { get; set; }
-        public decimal BaseIntellegence { get; set; }
-        public decimal BaseArmor { get; set; }
+        public Stat<decimal> StrengthBase { get; set; }
+        public Stat<decimal> AgilityBase { get; set; }
+        public Stat<decimal> IntellegenceBase { get; set; }
+        public Stat<decimal> StrengthGain { get; set; }
+        public Stat<decimal> AgilityGain { get; set; }
+        public Stat<decimal> IntellegenceGain { get; set; }
+        public Stat<decimal> ArmorBase { get; set; }
+        public Stat<decimal> MovementSpeedBase { get; set; }
+        public Stat<decimal> DamageBase { get; set; }
 
         //etc
     }
