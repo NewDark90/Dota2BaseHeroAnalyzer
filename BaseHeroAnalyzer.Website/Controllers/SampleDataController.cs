@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using BaseHeroAnalyzer.Core.Parsers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BaseHeroAnalyzer.Website.Controllers
@@ -24,6 +26,15 @@ namespace BaseHeroAnalyzer.Website.Controllers
                 TemperatureC = rng.Next(-20, 55),
                 Summary = Summaries[rng.Next(Summaries.Length)]
             });
+        }
+
+        [HttpGet("Parsed")]
+        public string ValveParseTest()
+        {
+            var parser = new ValveConfigParser();
+            var lines = System.IO.File.ReadAllLines(@"C:\Data\Code\Projects\Dota2BaseHeroAnalyzer\BaseHeroAnalyzer.Website\Resources\unparsed_npc_heroes.txt");
+            var heroFileText = String.Join(Environment.NewLine, lines);
+            return parser.ToJsonString(heroFileText);
         }
 
         public class WeatherForecast
