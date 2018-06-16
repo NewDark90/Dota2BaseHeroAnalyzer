@@ -12,7 +12,7 @@
 #	6/14/2018
 ######################################################################################################################>
 
-$inFile = "C:\Users\David\Desktop\Dota2BaseHeroAnalyzer\Parser\SingleHeroForParsing.txt"
+$inFile = "C:\Users\David\Desktop\Dota2BaseHeroAnalyzer\Parser\Simple.txt"
 $outfile = "C:\users\David\Desktop\Dota2BaseHeroAnalyzer\Parser\ParsedFile.json"
 
 #This function is used to close the streams (filestream, bufferedstream, streamreader)
@@ -214,7 +214,7 @@ function rest() {
     elseif ( $(getSymtabEntry) -match $stringRegex ) {
         emit -out ',' #comma inserted before the next property
         emitnewline
-        emittabs
+        emittabs -tabcount $indent
         prop    #prop -> attr val and attr -> string. Let attr handle the popping of stack
         rest    #if there are more properties at the same nest depth, call again later
         return
@@ -265,15 +265,22 @@ function obj(){
     #an error.
     if( $(getSymtabEntry) -match '{'){
         emit -out '{'
+        popSymtab
+        $indent++
         emitnewline
         if ( $(getSymtabEntry) -match '}' ){
-            emittabs
+            emittabs -tabcount $indent
             emit -out '}'
             popSymtab
             return
         }
         elseif ( $(getSymtabEntry) -match $stringRegex ) {
             props
+            if ( $(getSymtabEntry) -match '}' ){
+                emit -out '}'
+                emitnewline
+                return
+            }
         }
         else{
             error
