@@ -12,7 +12,7 @@
 #	6/14/2018
 ######################################################################################################################>
 
-$inFile = "C:\Users\David\Desktop\Dota2BaseHeroAnalyzer\Parser\Simple.txt"
+$inFile = "C:\Users\David\Desktop\Dota2BaseHeroAnalyzer\Parser\unparsed_npc_heroes.txt"
 $outfile = "C:\users\David\Desktop\Dota2BaseHeroAnalyzer\Parser\ParsedFile.json"
 
 #This function is used to close the streams (filestream, bufferedstream, streamreader)
@@ -68,7 +68,7 @@ $symtab = [System.Collections.Generic.List[System.Object]]::new()
 openStreams
 
 #do this while loop until the stream is done
-while (-not $sr.EndOfStream){
+while ($sr.Peek -ne -1){
     #assign the next character in the stream to a temp variable
     $c = getNextChar
     #if the variable is some sort of whitespace, break out of the loop and go to the next iteration.
@@ -91,7 +91,10 @@ while (-not $sr.EndOfStream){
         $buffer = ""
         do {
             $buffer += $c
-            $c = getNextChar    
+            $c = getNextChar
+            if ($buffer.Length -ge 100){
+                error
+            }    
         } while ($c -ne '"')
         $buffer += '"'
         $symtab.Add($buffer)
@@ -138,7 +141,7 @@ function emit($out, $file=$outfile){
 }
 
 function emittabs($tabcount){
-    emit -out $( "`n" * $tabcount)
+    emit -out $( "`t" * $tabcount)
 }
 
 function emitnewline(){
@@ -147,6 +150,7 @@ function emitnewline(){
 
 #General purpose error function because I'm a hack 
 function error(){
+    closeStreams
     write-output "There was an error during parsing."
     write-output "Sorry if this error system is shitty."
     read-host -Prompt "Press enter to exit"
@@ -191,7 +195,7 @@ function prop() {
 
     #for every property, emit tabs preceeding them.
     if($indent -gt 0){
-        emittabs -tabcount $indent
+        #emittabs -tabcount $indent
     }
     
     attr
@@ -205,16 +209,13 @@ function rest() {
     # go back to obj function ( obj -> { props | ε } ).
     # There are no more properties at the current nest depth to match.
     if( $(getSymtabEntry) -match "}" ){
-        $indent-- <#There are no more objects at the current nesting depth, so decrement the indent#>
         return
     }
     #rest -> prop rest
     #since prop starts with an attr, and attr is always going to be a string,
     #we want to make sure the next entry in the symtab is a string, or else it's an error
     elseif ( $(getSymtabEntry) -match $stringRegex ) {
-        emit -out ',' #comma inserted before the next property
-        emitnewline
-        emittabs -tabcount $indent
+        emit -out ','
         prop    #prop -> attr val and attr -> string. Let attr handle the popping of stack
         rest    #if there are more properties at the same nest depth, call again later
         return
@@ -242,7 +243,6 @@ function val(){
     #if all else fails, it's an error
     if( $(getSymtabEntry) -match $stringRegex ){
         emit -out $(getSymtabEntry)
-        emit -out "`n"
         popSymtab
     }
     elseif ( $(getSymTabEntry -match '{')){
@@ -266,20 +266,25 @@ function obj(){
     if( $(getSymtabEntry) -match '{'){
         emit -out '{'
         popSymtab
-        $indent++
-        emitnewline
+
+        #obj -> { ε }
         if ( $(getSymtabEntry) -match '}' ){
+            emitnewline
             emittabs -tabcount $indent
             emit -out '}'
             popSymtab
             return
         }
+        #obj -> { props }
         elseif ( $(getSymtabEntry) -match $stringRegex ) {
             props
             if ( $(getSymtabEntry) -match '}' ){
                 emit -out '}'
-                emitnewline
+                popsymtab
                 return
+            }
+            else{
+                error
             }
         }
         else{

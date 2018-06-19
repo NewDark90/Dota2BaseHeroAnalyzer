@@ -58,7 +58,7 @@
 		// Attributes
 		//-------------------------------------------------------------------------------------------------------------
 		"AttributePrimary"		"DOTA_ATTRIBUTE_STRENGTH"
-		"AttributeBaseStrength"		"0
+		"AttributeBaseStrength"		"0"
 		"AttributeStrengthGain"		"0"
 		"AttributeBaseIntelligence"		"0"
 		"AttributeIntelligenceGain"		"0"
